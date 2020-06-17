@@ -35,18 +35,14 @@ export class Qtree {
   }
 
   insert(bug) {
-    //console.log("insert", { x: bug.x, y: bug.y })
     if (!this.boundary.contains(bug)) {
-      //console.log("bug not in boundary,", { x: bug.x, y: bug.y }, this.boundary)
       return false
     }
     if (!this.divided) {
       if (this.bucket.length < this.capacity) {
-        //console.log("adding bug to bucket", { x: bug.x, y: bug.y }, this.bucket)
         this.bucket.push(bug)
         return true
       }
-      //console.log("subdividing")
       this.subdivide()
       this.transferBucket()
     }
@@ -55,21 +51,16 @@ export class Qtree {
   }
 
   passToChild(bug) {
-    //console.log("passtochild", { x: bug.x, y: bug.y })
     if (bug.x > this.boundary.x) {
       if (bug.y > this.boundary.y) {
-        //console.log("adding to se")
         return this.regions.se.insert(bug)
       } else {
-        //console.log("adding to ne")
         return this.regions.ne.insert(bug)
       }
     } else {
       if (bug.y > this.boundary.y) {
-        //console.log("adding to sw")
         return this.regions.sw.insert(bug)
       } else {
-        //console.log("adding to nw")
         return this.regions.nw.insert(bug)
       }
     }
@@ -171,7 +162,3 @@ export class Rectangle {
     )
   }
 }
-
-// exports.generateQuadTree = generateQuadTree
-// exports.Qtree = Qtree
-// exports.Rectangle = Rectangle
