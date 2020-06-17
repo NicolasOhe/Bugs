@@ -2,7 +2,7 @@
 
 This is an exploration of a simulated ecosystem with two teams contesting for supremacy.
 
-This simulation uses one algorithm and one web technology for an efficient computation of interactions between many thousands of entities: quadtrees allow an efficient calculation of close neighboors, and webgl displays the scene very quickly in the canvas.
+This simulation uses one algorithm called "quadtree" that allows an efficient calculation of close neighboor. As a result, an efficient computation of interactions between many thousands of entities ("bugs") is possible. To display those entities quickly on the screen, the power of the graphic processing unit is put to contribution via webgl.
 
 Visit the online version here: https://nicolasohe.github.io/bugs/
 
@@ -21,12 +21,12 @@ npm start
 Your default browser should then open the application.
 If not, follow the instructions displayed in the terminal.
 
-## Packages and libraries used
+## Packages and libraries
 
 This app only relies on the technologies available in contemporary (2020) browsers (canvas, webgl, execution of JavaScript).
 
 All custom tools are included in the project (see src/tools/).
 
-## Thoughts about the Good, the Bad, and the Clock
+## Thoughts
 
 I am fascinated by the intelligence and strategies that can emerge from very simple sets of rules that autonomous agents follow.
