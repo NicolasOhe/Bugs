@@ -1,4 +1,4 @@
-# Bugs - A simulated ecosystem
+# Bugs - A simulated ecosystem 🐞
 
 This is an exploration of a simulated ecosystem with two teams contesting for supremacy.
 

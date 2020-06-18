@@ -1,73 +1,118 @@
 import WebGlElement from '../../../tools/webglelement'
 import { generateQuadTree, Rectangle } from '../../../tools/qtree'
 import { Killer } from './killers'
-import { Vehicle } from './vehicle'
 
-export class Bug extends Vehicle {
-  constructor(team, x, y) {
-    super(team, x, y, Bug.maxSpeed, Bug.energyLimit)
-    this.task = Bug.activity.gather
+export class Vehicle {
+  constructor(team, x, y, maxSpeed, energyLimit) {
+    this.x = x != null ? x : Math.random()
+    this.y = y != null ? y : Math.random()
+    this.vX = Math.random() - 0.5
+    this.vY = Math.random() - 0.5
+    this.engergyLimit = energyLimit
+    this.energy = Math.random() * 0.8 * energyLimit + 0.2 * energyLimit
+    this.team = team
+    this.home = { x: 0.5, y: this.team === 0 ? 0.2 : 0.8 }
+    this.maxSpeed = maxSpeed
   }
 
-  alter() {
-    this.energy = this.energy * 0.995 - 0.001
+  move() {
+    this.x += this.vX / this.maxSpeed
+    this.y += this.vY / this.maxSpeed
+
+    // Check out of borders
+    if (this.x < 0) {
+      this.vX *= -1
+      this.x *= -1
+    } else if (this.x > 1) {
+      this.vX *= -1
+      this.x = -this.x + 2
+    }
+    if (this.y < 0) {
+      this.vY *= -1
+      this.y *= -1
+    } else if (this.y > 1) {
+      this.vY *= -1
+      this.y = -this.y + 2
+    }
   }
 
-  interact(qtree, otherSize) {
-    const minTouchDistance = Bug.size / 2 + otherSize / 2
-    const surfaceToSearch = new Rectangle(
-      this.x,
-      this.y,
-      minTouchDistance,
-      minTouchDistance
+  // interact(qtree, otherSize) {
+  //   const minTouchDistance = Bug.size / 2 + otherSize / 2
+  //   const surfaceToSearch = new Rectangle(
+  //     this.x,
+  //     this.y,
+  //     minTouchDistance,
+  //     minTouchDistance
+  //   )
+  //   const nearNeighboors = qtree
+  //     .query(surfaceToSearch)
+  //     .filter((n) => n !== this)
+
+  //   nearNeighboors.forEach((neighboor) => {
+  //     if (this.getDistance(neighboor) < minTouchDistance) {
+  //       if (neighboor.team !== this.team) {
+  //         this.energy = this.energy * 0.98 - 0.01
+  //       }
+  //     }
+  //   })
+  // }
+
+  eat(ground) {
+    const harvest = ground.collect(this)
+    this.energy = Math.min(this.engergyLimit, this.energy + harvest)
+  }
+
+  findFood(ground) {
+    const [xAttraction, yAttraction] = ground.inspectSurroundingFertility(this)
+    this.vX += Math.min(1, xAttraction) / 20
+    this.vY += Math.min(1, yAttraction) / 20
+
+    const magnitude = this.vX ** 2 + this.vY ** 2
+    if (magnitude > 1) {
+      this.vX /= magnitude
+      this.vY /= magnitude
+    }
+  }
+
+  goHome() {
+    this.goTowardsTarget(this.home)
+  }
+
+  goTowardsTarget(target) {
+    const [vectorX, vectorY] = this.normalize(
+      target.x - this.x,
+      target.y - this.y
     )
-    const nearNeighboors = qtree
-      .query(surfaceToSearch)
-      .filter((n) => n !== this)
 
-    nearNeighboors.forEach((neighboor) => {
-      if (this.getDistance(neighboor) < minTouchDistance) {
-        if (neighboor.team !== this.team) {
-          this.energy = this.energy * 0.98 - 0.01
-        }
-      }
-    })
+    const steering = {
+      x: vectorX - this.vX,
+      y: vectorY - this.vY,
+    }
+
+    this.vX += steering.x * 0.01
+    this.vY += steering.y * 0.01
+
+    const [vX, vY] = this.normalize(this.vX, this.vY, true)
+
+    this.vX = vX
+    this.vY = vY
   }
 
-  work(ground, bases) {
-    if (this.task === Bug.activity.gather) {
-      if (this.energy > 0.9) {
-        this.task = Bug.activity.bringFood
-      } else {
-        this.findFood(ground)
-      }
+  normalize(x, y, preserveBelowOne = false) {
+    const magnitude = x ** 2 + y ** 2
+    if (preserveBelowOne && magnitude < 1) {
+      return [x, y]
     }
-    if (this.task === Bug.activity.bringFood) {
-      this.goHome(bases)
-    }
+    return [x / magnitude, y / magnitude]
   }
 
-  goHome(bases) {
-    if (this.getDistance(this.home) < 0.03) {
-      this.task = Bug.activity.gather
-      if (this.energy > Bug.energyTransfer) {
-        bases.register[this.team].getEnergy(Bug.energyTransfer)
-        this.energy -= Bug.energyTransfer
-      } else {
-        bases.register[this.team].getEnergy(this.energy / 2)
-        this.energy /= 2
-      }
-      return
-    }
-
-    super.goHome()
+  getDistance(to) {
+    return Math.sqrt((to.y - this.y) ** 2 + (to.x - this.x) ** 2)
+  }
+  getManhattanDistance(to) {
+    return (to.y - this.y) ** 2 + (to.x - this.x) ** 2
   }
 }
-
-Bug.team = { red: 0, blue: 1 }
-Bug.activity = { gather: 0, bringFood: 1 }
-Bug.energyTransfer = 0.5
-Bug.energyLimit = 1
 
 export default class Bugs extends WebGlElement {
   constructor(population, surface) {
@@ -242,7 +287,6 @@ export default class Bugs extends WebGlElement {
     const ground = this.world.register['Ground']
     const bases = this.world.register['Bases']
     this.bugs.forEach((b) => b.move())
-    this.bugs.forEach((b) => b.alter())
     this.bugs.forEach((b) => b.interact(qtreeBugs, Bug.size))
     this.bugs.forEach((b) => b.interact(qtreeKillers, Killer.size))
     this.bugs.forEach((b) => b.eat(ground))
