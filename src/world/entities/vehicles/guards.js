@@ -109,10 +109,9 @@ Guard.energyTransfer = 5
 Guard.energyLimit = 10
 
 export default class Guards extends WebGlElement {
-  constructor(population, surface) {
+  constructor(population) {
     super()
 
-    this.size = Math.floor(Guard.size * surface)
     this.program = null
     this.vertexBuffer = null
     this.vertexColorBuffer = null
@@ -133,14 +132,14 @@ export default class Guards extends WebGlElement {
   setup(gl, world) {
     this.gl = gl
     this.world = world
-
+    const size = Math.floor(Guard.size * world.surface)
     const vertexShader = `
     attribute vec4 a_Position;
     attribute vec4 a_Color;
     varying vec4 v_Color;
     void main() {
         gl_Position = a_Position*2.-1.;
-        gl_PointSize = ${this.size}.;
+        gl_PointSize = ${size}.;
         v_Color = a_Color;
     }
     `

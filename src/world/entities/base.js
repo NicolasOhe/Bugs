@@ -75,7 +75,6 @@ export default class Bases extends WebGlElement {
     this.register = {}
     this.colors = []
     this.world = null
-    this.surface = surface
 
     const blue = new Base(Bug.team.blue, 0.5, 0.8, 30)
     this.bases.push(blue)
@@ -99,7 +98,7 @@ export default class Bases extends WebGlElement {
      varying vec4 v_Color;
     void main() {
         gl_Position = a_Position*2.-1.;
-        gl_PointSize = ${Base.size * this.surface}.;
+        gl_PointSize = ${Base.size * world.surface}.;
         v_Color = a_Color;
     }
     `

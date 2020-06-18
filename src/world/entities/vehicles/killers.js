@@ -84,9 +84,9 @@ Killer.energyTransfer = 0.5
 Killer.energyLimit = 10
 
 export default class Killers extends WebGlElement {
-  constructor(population, surface) {
+  constructor(population) {
     super()
-    this.size = Math.floor(Killer.size * surface)
+
     this.program = null
     this.vertexBuffer = null
     this.vertexColorBuffer = null
@@ -107,6 +107,7 @@ export default class Killers extends WebGlElement {
   setup(gl, world) {
     this.gl = gl
     this.world = world
+    const size = Math.floor(Killer.size * world.surface)
 
     const vertexShader = `
     attribute vec4 a_Position;
@@ -114,7 +115,7 @@ export default class Killers extends WebGlElement {
     varying vec4 v_Color;
     void main() {
         gl_Position = a_Position*2.-1.;
-        gl_PointSize = ${this.size}.;
+        gl_PointSize = ${size}.;
         v_Color = a_Color;
     }
     `

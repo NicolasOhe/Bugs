@@ -15,6 +15,7 @@ export default class World {
     this.register = {}
     this.stats = new Stats(60, '#stats')
   }
+
   add(element) {
     this.elements.push(element)
     this.register[element.constructor.name] = element

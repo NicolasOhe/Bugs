@@ -1,13 +1,9 @@
 import World from './world/world'
 import Ground from './world/entities/ground'
-import Bases from './world/entities/base'
-import Bugs from './world/entities/vehicles/bugs'
-import Killers from './world/entities/vehicles/killers'
-import Guards from './world/entities/vehicles/guards'
-import { Bug } from './world/entities/vehicles/bugs'
-import { Killer } from './world/entities/vehicles/killers'
-import { Guard } from './world/entities/vehicles/guards'
-import { Base } from './world/entities/base'
+import Bases, { Base } from './world/entities/base'
+import Bugs, { Bug } from './world/entities/vehicles/bugs'
+import Killers, { Killer } from './world/entities/vehicles/killers'
+import Guards, { Guard } from './world/entities/vehicles/guards'
 
 const surface = 800
 const itemsPerLine = 120
@@ -25,10 +21,11 @@ Base.defenseArea = 0.3
 const world = new World(surface, 'canvas')
 
 const ground = new Ground(itemsPerLine)
-const bases = new Bases(surface)
-const bugs = new Bugs(100, surface)
-const killers = new Killers(2, surface)
-const guards = new Guards(2, surface)
+
+const bases = new Bases()
+const bugs = new Bugs(100)
+const killers = new Killers(2)
+const guards = new Guards(2)
 
 world.add(ground)
 world.add(bugs)

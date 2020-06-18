@@ -70,10 +70,8 @@ Bug.energyTransfer = 0.5
 Bug.energyLimit = 1
 
 export default class Bugs extends WebGlElement {
-  constructor(population, surface) {
+  constructor(population) {
     super()
-
-    this.bugSize = Math.floor(Bug.size * surface)
     this.program = null
     this.vertexBuffer = null
     this.vertexColorBuffer = null
@@ -95,13 +93,15 @@ export default class Bugs extends WebGlElement {
     this.gl = gl
     this.world = world
 
+    const bugSize = Math.floor(Bug.size * world.surface)
+
     const vertexShader = `
     attribute vec4 a_Position;
     attribute vec4 a_Color;
     varying vec4 v_Color;
     void main() {
         gl_Position = a_Position*2.-1.;
-        gl_PointSize = ${this.bugSize}.;
+        gl_PointSize = ${bugSize}.;
         v_Color = a_Color;
     }
     `
