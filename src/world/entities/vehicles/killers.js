@@ -52,8 +52,8 @@ export class Killer extends Vehicle {
       const surfaceToSearch = new Rectangle(
         this.x,
         this.y,
-        Killer.size * 2,
-        Killer.size * 2
+        Killer.perceptionLimit,
+        Killer.perceptionLimit
       )
       const nearNeighboors = qtreeBugs
         .query(surfaceToSearch)
@@ -70,7 +70,7 @@ export class Killer extends Vehicle {
         [null, Infinity]
       )
 
-      if (target) {
+      if (target && dist < Killer.perceptionLimit) {
         this.target = target
         this.goTowardsTarget(target)
       }
@@ -82,6 +82,7 @@ Killer.team = { red: 0, blue: 1 }
 Killer.activity = { gather: 0, bringFood: 1 }
 Killer.energyTransfer = 0.5
 Killer.energyLimit = 10
+Killer.perceptionLimit = 2 * Killer.size
 
 export default class Killers extends WebGlElement {
   constructor(population) {
@@ -222,27 +223,6 @@ export default class Killers extends WebGlElement {
 
   update(sharedData) {
     this.animate(sharedData)
-
-    let { gl } = this
-
-    gl.useProgram(this.program)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-
-    const energy = this.getEnergy()
-    const teams = this.getTeams()
-    const energyAndTeamColors = energy.reduce((acc, energy, index) => {
-      acc.push(energy, teams[index])
-      return acc
-    }, [])
-
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(energyAndTeamColors),
-      gl.STATIC_DRAW
-    )
-    const positions = this.getPositions()
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
   }
 
   share() {

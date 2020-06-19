@@ -205,31 +205,6 @@ export default class Bugs extends WebGlElement {
 
   update(sharedData) {
     this.animate(sharedData)
-
-    let { gl } = this
-
-    gl.useProgram(this.program)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-
-    const energy = this.getBugsEnergy()
-    const teams = this.getBugsTeams()
-    const energyAndTeamColors = energy.reduce((acc, energy, index) => {
-      acc.push(energy, teams[index])
-      return acc
-    }, [])
-
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(energyAndTeamColors),
-      gl.STATIC_DRAW
-    )
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(this.getBugsPositions()),
-      gl.STATIC_DRAW
-    )
   }
 
   share() {

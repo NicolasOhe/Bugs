@@ -6,8 +6,8 @@ import Killers, { Killer } from './world/entities/vehicles/killers'
 import Guards, { Guard } from './world/entities/vehicles/guards'
 
 const surface = 800
-const itemsPerLine = 120
-Bug.size = 1 / 50
+const itemsPerLine = 200
+Bug.size = 1 / 100
 Bug.maxSpeed = 700
 Killer.size = 1 / 30
 Killer.maxSpeed = 500
@@ -19,7 +19,7 @@ Base.energyBuffer = 5
 Base.defenseArea = 0.3
 
 const world = new World(surface, 'canvas')
-
+window.world = world
 const ground = new Ground(itemsPerLine)
 
 const bases = new Bases()
