@@ -33,7 +33,7 @@ export class Base {
   work(bugs, killers, guards) {
     if (!this.saveForKiller && !this.saveForGuard) {
       if (this.energy > Base.energyBuffer) {
-        bugs.createBug(this.team, this.x, this.y)
+        bugs.create(this.team, this.x, this.y)
         this.energy--
       }
     } else {

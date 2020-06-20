@@ -30,15 +30,14 @@ export default class World {
   }
 
   update() {
-    const temporarySharedData = {}
     this.elements.forEach((element) => {
-      if (element.share) {
-        temporarySharedData[element.constructor.name] = element.share()
+      if (element.prepareUpdate) {
+        element.prepareUpdate()
       }
     })
 
     this.elements.forEach((element) => {
-      element.update(temporarySharedData)
+      element.update()
     })
   }
 
@@ -51,6 +50,7 @@ export default class World {
 
   generateStats(time) {
     this.stats.tick(time)
+    return
     const total = this.register.Bugs.bugs.length
     this.stats.add('bugs', total)
     const reds = this.register.Bugs.bugs.filter((b) => b.team === Bug.team.red)
