@@ -14,6 +14,7 @@ export class Killer extends Vehicle {
 
   alter() {
     this.energy = this.energy * 0.995 - 0.001
+    return this
   }
 
   interact(species) {
@@ -28,6 +29,7 @@ export class Killer extends Vehicle {
         }
       }
     })
+    return this
   }
 
   work() {
@@ -37,6 +39,7 @@ export class Killer extends Vehicle {
       this.task = Killer.activity.gather
       this.findFood()
     }
+    return this
   }
 
   attack() {
@@ -87,11 +90,10 @@ export default class Killers extends SpeciesContainer {
   update() {
     const { Guards, Killers } = this.world.register
     this.individuals.forEach((k) => k.move())
-    this.individuals.forEach((k) => k.alter())
-    this.individuals.forEach((k) => k.interact(Killers))
-    this.individuals.forEach((k) => k.interact(Guards))
-    this.individuals.forEach((k) => k.eat())
-    this.individuals.forEach((k) => k.work())
+    this.individuals.forEach((k) =>
+      k.alter().interact(Killers).interact(Guards).eat().work()
+    )
+
     this.individuals = this.individuals.filter((k) => k.energy > 0)
   }
 }

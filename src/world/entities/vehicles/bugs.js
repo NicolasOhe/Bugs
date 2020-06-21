@@ -1,5 +1,3 @@
-import WebGlElement from '../../../tools/webglelement'
-import { generateQuadTree, Rectangle } from '../../../tools/qtree'
 import { Killer } from './killers'
 import { Vehicle } from './vehicle'
 import SpeciesContainer from './speciesContainer'
@@ -12,6 +10,7 @@ export class Bug extends Vehicle {
 
   alter() {
     this.energy = this.energy * 0.995 - 0.001
+    return this
   }
 
   interact(species) {
@@ -26,6 +25,7 @@ export class Bug extends Vehicle {
         }
       }
     })
+    return this
   }
 
   work() {
@@ -39,6 +39,7 @@ export class Bug extends Vehicle {
     if (this.task === Bug.activity.bringFood) {
       this.goHome()
     }
+    return this
   }
 
   goHome() {
@@ -71,11 +72,9 @@ export default class Bugs extends SpeciesContainer {
   update() {
     const { Bugs, Killers } = this.world.register
     this.individuals.forEach((b) => b.move())
-    this.individuals.forEach((b) => b.alter())
-    this.individuals.forEach((b) => b.interact(Bugs))
-    this.individuals.forEach((b) => b.interact(Killers))
-    this.individuals.forEach((b) => b.eat())
-    this.individuals.forEach((b) => b.work())
+    this.individuals.forEach((b) =>
+      b.alter().interact(Bugs).interact(Killers).eat().work()
+    )
     this.individuals = this.individuals.filter((b) => b.energy > 0)
   }
 }

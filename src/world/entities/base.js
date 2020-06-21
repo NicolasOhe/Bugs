@@ -64,89 +64,37 @@ export class Base {
 }
 
 export default class Bases extends WebGlElement {
-  constructor(surface) {
+  constructor() {
     super()
-    this.program = null
-    this.vertexBuffer = null
-    this.vertexColorBuffer = null
-    this.a_position = null
-    this.a_Color = null
-    this.gl = null
-    this.bases = []
+    this.elements = []
     this.register = {}
-    this.colors = []
     this.world = null
   }
 
   setup(gl, world) {
-    this.gl = gl
     this.world = world
 
     const blue = new Base(this.world, Bug.team.blue, 0.5, 0.8, 30)
-    this.bases.push(blue)
+    this.elements.push(blue)
     this.register[Bug.team.blue] = blue
 
     const red = new Base(this.world, Bug.team.red, 0.5, 0.2, 30)
-    this.bases.push(red)
+    this.elements.push(red)
     this.register[Bug.team.red] = red
+
     window.addEventListener('click', () => {
       red.saveForKiller = true
     })
 
-    const vertexShader = `
-    attribute vec4 a_Position;
-     attribute vec4 a_Color;
-     varying vec4 v_Color;
-    void main() {
-        gl_Position = a_Position*2.-1.;
-        gl_PointSize = ${Base.size * world.surface}.;
-        v_Color = a_Color;
-    }
-    `
-
-    const fragmentShader = `
-    precision mediump float;
-    varying vec4 v_Color;
-    
-    void main() {
-      float dist = distance(gl_PointCoord, vec2(0.5, 0.5));
-      if (dist < 0.5 ) {
-        //float intensity = smoothstep(0.6,0.8,1.-dist);
-        vec4 color = vec4(1.-v_Color.r, 0., v_Color.r, 1.);
-        gl_FragColor = color;
-      } else {
-        discard;
-      }
-    }
-    `
-
-    this.program = this.createProgramm(gl, vertexShader, fragmentShader)
-    gl.useProgram(this.program)
-
-    // setup vertices buffer
-    this.vertexBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(this.getBasesPositions()),
-      gl.STATIC_DRAW
-    )
-    this.a_Position = gl.getAttribLocation(this.program, 'a_Position')
-
-    // setup color buffer
-    this.vertexColorBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(this.getBugsTeams()),
-      gl.STATIC_DRAW
-    )
-    this.a_Color = gl.getAttribLocation(this.program, 'a_Color')
+    const entitySize = Base.size * world.surface
+    const positions = this.getBasesPositions()
+    const colors = this.getBugsTeams()
+    super.setup(gl, entitySize, positions, colors)
   }
 
   getBasesPositions() {
     const positions = []
-    this.bases.forEach((base) => {
+    this.elements.forEach((base) => {
       positions.push(base.x, base.y)
     })
     return positions
@@ -154,28 +102,17 @@ export default class Bases extends WebGlElement {
 
   getBugsTeams() {
     const teams = []
-    this.bases.forEach((base) => {
-      teams.push(base.team)
+    this.elements.forEach((base) => {
+      teams.push(1, base.team)
     })
     return teams
   }
 
   draw() {
-    const { gl, program } = this
-    gl.useProgram(program)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-    gl.vertexAttribPointer(this.a_Position, 2, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(this.a_Position)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-    gl.vertexAttribPointer(this.a_Color, 1, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(this.a_Color)
-
-    gl.drawArrays(gl.POINTS, 0, this.bases.length)
+    super.draw(this.elements.length)
   }
 
   update() {
-    this.bases.forEach((b) => b.work())
+    this.elements.forEach((b) => b.work())
   }
 }

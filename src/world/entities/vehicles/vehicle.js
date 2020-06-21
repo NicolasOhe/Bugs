@@ -62,6 +62,7 @@ export class Vehicle {
     const ground = this.world.register.Ground
     const harvest = ground.collect(this)
     this.energy = Math.min(this.engergyLimit, this.energy + harvest)
+    return this
   }
 
   findFood() {

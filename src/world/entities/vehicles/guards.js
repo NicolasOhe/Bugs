@@ -13,6 +13,7 @@ export class Guard extends Vehicle {
 
   alter() {
     this.energy = this.energy - 0.001
+    return this
   }
 
   interact(species) {
@@ -31,6 +32,7 @@ export class Guard extends Vehicle {
         }
       }
     })
+    return this
   }
 
   work() {
@@ -44,6 +46,7 @@ export class Guard extends Vehicle {
       this.task = Guard.activity.goHome
       this.goHome()
     }
+    return this
   }
 
   patrol() {
@@ -113,18 +116,17 @@ export default class Guards extends SpeciesContainer {
     const { Guards, Killers, Bases } = this.world.register
 
     this.individuals.forEach((k) => k.move())
-    this.individuals.forEach((k) => k.alter())
-    this.individuals.forEach((k) => k.interact(Guards))
-    this.individuals.forEach((k) => k.interact(Killers))
-    //this.guards.forEach((k) => k.eat())
-    this.individuals.forEach((k) => k.work())
+    this.individuals.forEach((k) => {
+      k.alter().interact(Guards).interact(Killers).work()
+    })
+
     this.individuals = this.individuals.filter((k) => k.energy > 0)
 
     if (!this.individuals.some((g) => g.team === Guard.team.red)) {
-      Bases.bases.find((b) => b.team === Guard.team.red).saveForGuard = true
+      Bases.elements.find((b) => b.team === Guard.team.red).saveForGuard = true
     }
     if (!this.individuals.some((g) => g.team === Guard.team.blue)) {
-      Bases.bases.find((b) => b.team === Guard.team.blue).saveForGuard = true
+      Bases.elements.find((b) => b.team === Guard.team.blue).saveForGuard = true
     }
   }
 }
