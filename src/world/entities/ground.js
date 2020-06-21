@@ -13,6 +13,7 @@ export default class Ground extends WebGlElement {
     this.gl = null
     this.ground = []
     this.colors = []
+    this.world = null
 
     for (let iy = 0; iy < itemsPerLine; iy++) {
       for (let ix = 0; ix < itemsPerLine; ix++) {
@@ -26,6 +27,8 @@ export default class Ground extends WebGlElement {
 
   setup(gl, world) {
     this.gl = gl
+    this.world = world
+
     const vertexShader = `
     attribute vec4 a_Position;
     attribute vec4 a_Color;
@@ -100,9 +103,12 @@ export default class Ground extends WebGlElement {
   }
 
   update() {
-    this.colors = this.colors.map((c) =>
-      Math.max(0, Math.min(c + Math.random() / 2000, 1))
-    )
+    for (let i = 0; i < this.colors.length; i++) {
+      this.colors[i] = Math.max(
+        0,
+        Math.min(this.colors[i] + Math.random() / 2000, 1)
+      )
+    }
   }
 
   collect({ x, y }) {

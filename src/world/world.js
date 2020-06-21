@@ -66,7 +66,7 @@ export default class World {
       'Stock blues',
       this.register.Bases.register[Bug.team.blue].energy
     )
-    // debugger
+
     this.stats.add(
       'Average energy killers',
       this.register.Killers.individuals.reduce((acc, cur) => {
