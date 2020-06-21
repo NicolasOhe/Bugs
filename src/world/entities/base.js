@@ -2,10 +2,10 @@ import WebGlElement from '../../tools/webglelement'
 import { Bug } from './vehicles/bugs'
 
 export class Base {
-  constructor(team, x, y, energy) {
+  constructor(world, team, x, y, energy) {
     this.x = x != null ? x : Math.random()
     this.y = y != null ? y : Math.random()
-
+    this.world = world
     this.energy = energy || 0
     this.reserves = 0
     this.team = team
@@ -30,26 +30,27 @@ export class Base {
     return energy
   }
 
-  work(bugs, killers, guards) {
+  work() {
+    const { Bugs, Killers, Guards } = this.world.register
     if (!this.saveForKiller && !this.saveForGuard) {
       if (this.energy > Base.energyBuffer) {
-        bugs.create(this.team, this.x, this.y)
+        Bugs.create(this.team, this.x, this.y)
         this.energy--
       }
     } else {
       if (this.saveForKiller && this.energy > 10) {
-        killers.create(this.team, this.x, this.y)
+        Killers.create(this.team, this.x, this.y)
         this.energy -= 10
         this.saveForKiller = false
       }
       if (this.saveForGuard && this.energy > 40) {
-        guards.create(this.team, this.x, this.y)
+        Guards.create(this.team, this.x, this.y)
         this.energy -= 40
         this.saveForGuard = false
       }
     }
     if (this.reserves > 10) {
-      killers.create(this.team, this.x, this.y)
+      Killers.create(this.team, this.x, this.y)
       this.reserves -= 10
     }
   }
@@ -75,22 +76,22 @@ export default class Bases extends WebGlElement {
     this.register = {}
     this.colors = []
     this.world = null
-
-    const blue = new Base(Bug.team.blue, 0.5, 0.8, 30)
-    this.bases.push(blue)
-    this.register[Bug.team.blue] = blue
-
-    const red = new Base(Bug.team.red, 0.5, 0.2, 30)
-    this.bases.push(red)
-    this.register[Bug.team.red] = red
-    window.addEventListener('click', () => {
-      red.saveForKiller = true
-    })
   }
 
   setup(gl, world) {
     this.gl = gl
     this.world = world
+
+    const blue = new Base(this.world, Bug.team.blue, 0.5, 0.8, 30)
+    this.bases.push(blue)
+    this.register[Bug.team.blue] = blue
+
+    const red = new Base(this.world, Bug.team.red, 0.5, 0.2, 30)
+    this.bases.push(red)
+    this.register[Bug.team.red] = red
+    window.addEventListener('click', () => {
+      red.saveForKiller = true
+    })
 
     const vertexShader = `
     attribute vec4 a_Position;
@@ -151,14 +152,6 @@ export default class Bases extends WebGlElement {
     return positions
   }
 
-  getBugsEnergy() {
-    const bugsEnergy = []
-    this.bugs.forEach((bug) => {
-      bugsEnergy.push(bug.energy)
-    })
-    return bugsEnergy
-  }
-
   getBugsTeams() {
     const teams = []
     this.bases.forEach((base) => {
@@ -183,13 +176,6 @@ export default class Bases extends WebGlElement {
   }
 
   update() {
-    this.animate()
-  }
-
-  animate() {
-    const bugs = this.world.register['Bugs']
-    const killers = this.world.register['Killers']
-    const guards = this.world.register['Guards']
-    this.bases.forEach((b) => b.work(bugs, killers, guards))
+    this.bases.forEach((b) => b.work())
   }
 }

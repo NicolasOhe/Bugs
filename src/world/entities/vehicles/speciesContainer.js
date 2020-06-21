@@ -111,6 +111,7 @@ export default class SpeciesContainer extends WebGlElement {
     })
     return energy
   }
+
   getTeams() {
     const teams = []
     this.individuals.forEach((i) => {
