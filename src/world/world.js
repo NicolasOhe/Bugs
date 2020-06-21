@@ -50,11 +50,12 @@ export default class World {
 
   generateStats(time) {
     this.stats.tick(time)
-    return
-    const total = this.register.Bugs.bugs.length
+
+    const total = this.register.Bugs.individuals.length
     this.stats.add('bugs', total)
-    const reds = this.register.Bugs.bugs.filter((b) => b.team === Bug.team.red)
-      .length
+    const reds = this.register.Bugs.individuals.filter(
+      (b) => b.team === Bug.team.red
+    ).length
     this.stats.add('Reds', reds)
     this.stats.add('Blues', total - reds)
     this.stats.add(
@@ -68,10 +69,10 @@ export default class World {
     // debugger
     this.stats.add(
       'Average energy killers',
-      this.register.Killers.killers.reduce((acc, cur) => {
+      this.register.Killers.individuals.reduce((acc, cur) => {
         acc += cur.energy
         return acc
-      }, 0) / this.register.Killers.killers.length
+      }, 0) / this.register.Killers.individuals.length
     )
   }
 }

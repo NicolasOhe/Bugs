@@ -88,6 +88,11 @@ export default class Ground extends WebGlElement {
     gl.enableVertexAttribArray(this.a_Position)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(this.colors),
+      gl.STATIC_DRAW
+    )
     gl.vertexAttribPointer(this.a_Color, 1, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Color)
 
@@ -95,18 +100,8 @@ export default class Ground extends WebGlElement {
   }
 
   update() {
-    let { gl } = this
-
     this.colors = this.colors.map((c) =>
       Math.max(0, Math.min(c + Math.random() / 2000, 1))
-    )
-
-    gl.useProgram(this.program)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(this.colors),
-      gl.STATIC_DRAW
     )
   }
 
@@ -123,8 +118,8 @@ export default class Ground extends WebGlElement {
     return 0
   }
 
-  inspectSurroundingFertility(bug) {
-    const { x, y } = bug
+  inspectSurroundingFertility(vehicule) {
+    const { x, y } = vehicule
     const column = Math.floor(x / this.tileSize)
     const row = Math.floor(y / this.tileSize)
     const index = row * this.itemsPerLine + column
