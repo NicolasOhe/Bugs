@@ -946,7 +946,7 @@ Matrix4.prototype.dropShadowDirectionally = function (
  * 引数を指定するとその内容がコピーされる
  * @param opt_src 要素をコピーしてくるベクトル（オプション）
  */
-var Vector3 = function (opt_src) {
+export const Vector3 = function (opt_src) {
   var v = new Float32Array(3)
   if (opt_src && typeof opt_src === 'object') {
     v[0] = opt_src[0]

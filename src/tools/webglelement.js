@@ -1,5 +1,5 @@
-import { Matrix4 } from '../tools/cuon-matrix'
-import { vertices, indices } from '../tools/cube'
+import { Matrix4, Vector3 } from '../tools/cuon-matrix'
+import { vertices, indices, normals } from '../tools/cube'
 export default class WebGlElement {
   constructor() {
     this.program = null
@@ -8,8 +8,13 @@ export default class WebGlElement {
     this.indexBuffer = null
     this.a_position = null
     this.a_Color = null
+    this.a_Normal = null
     this.u_MvpMatrix = null
     this.u_Color = null
+    this.u_NormalMatrix = null
+    this.u_LightColor = null
+    this.u_LightDirection = null
+    this.u_AmbientLight = null
     this.gl = null
     this.world = null
     this.entitySize = null
@@ -79,14 +84,33 @@ export default class WebGlElement {
 
     const vertexShader = `
       attribute vec4 a_Position;
+      attribute vec4 a_Normal;
       attribute vec4 a_Color;
       uniform mat4 u_MvpMatrix;
-      uniform vec2 u_Color;
+      uniform vec4 u_Color;
+      uniform mat4 u_NormalMatrix;    // Transformation matrix of normal
+      uniform vec3 u_LightColor;      // Light color
+      uniform vec3 u_LightDirection;  // World coordinate, normalized
+      uniform vec3 u_AmbientLight;    // Ambient light color
       varying vec4 v_Color;
 
       void main() {
           gl_Position = u_MvpMatrix * a_Position;
-          v_Color = vec4(u_Color,0.0,1.0);
+          
+          // Recalculate normal with normal matrix and make its length 1.0
+          vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+      
+          // The dot product of the light direction and the normal
+          float nDotL = max(dot(u_LightDirection, normal), 0.0);
+      
+          // Calculate the color due to diffuse reflection
+          vec3 diffuse = u_LightColor * u_Color.rgb * nDotL;
+      
+          // Calculate the color due to ambient reflection
+          vec3 ambient = u_AmbientLight * u_Color.rgb;
+      
+          // Add the surface colors due to diffuse and ambient reflection
+          v_Color = vec4(diffuse + ambient, u_Color.a);
       }
       `
 
@@ -97,7 +121,7 @@ export default class WebGlElement {
       varying vec4 v_Color;
       
       void main() {
-          gl_FragColor = vec4(1.-v_Color.g, 1.-v_Color.r, v_Color.g, 1.);
+          gl_FragColor = v_Color;
        
       }
       `
@@ -124,6 +148,27 @@ export default class WebGlElement {
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
     }
     this.a_Color = gl.getAttribLocation(this.program, 'a_Color')
+
+    // setup normals buffer
+    this.normalsBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW)
+    this.a_Normal = gl.getAttribLocation(this.program, 'a_Normal')
+
+    // setup uniforms
+    this.u_NormalMatrix = gl.getUniformLocation(this.program, 'u_NormalMatrix')
+    this.u_LightColor = gl.getUniformLocation(this.program, 'u_LightColor')
+    this.u_LightDirection = gl.getUniformLocation(
+      this.program,
+      'u_LightDirection'
+    )
+    this.u_AmbientLight = gl.getUniformLocation(this.program, 'u_AmbientLight')
+
+    const lightDirection = new Vector3([1.0, 3.0, 4.0])
+    lightDirection.normalize() // Normalize
+    gl.uniform3fv(this.u_LightDirection, lightDirection.elements)
+    gl.uniform3f(this.u_AmbientLight, 0.3, 0.3, 0.3)
+    gl.uniform3f(this.u_LightColor, 1.0, 1.0, 1.0)
 
     this.u_MvpMatrix = gl.getUniformLocation(this.program, 'u_MvpMatrix')
     this.u_Color = gl.getUniformLocation(this.program, 'u_Color')
@@ -210,19 +255,24 @@ export default class WebGlElement {
     gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Position)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-    if (newColors) {
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(newColors),
-        gl.STATIC_DRAW
-      )
-    }
-    gl.vertexAttribPointer(this.a_Color, 2, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(this.a_Color)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer)
+    gl.vertexAttribPointer(this.a_Normal, 3, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(this.a_Normal)
+
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
+    // if (newColors) {
+    //   gl.bufferData(
+    //     gl.ARRAY_BUFFER,
+    //     new Float32Array(newColors),
+    //     gl.STATIC_DRAW
+    //   )
+    // }
+    // gl.vertexAttribPointer(this.a_Color, 2, gl.FLOAT, false, 0, 0)
+    // gl.enableVertexAttribArray(this.a_Color)
 
     const mvpMatrix = new Matrix4() // Model view projection matrix
     const modelMatrix = new Matrix4() // Model matrix
+    const normalMatrix = new Matrix4() // Transformation matrix for normals
 
     for (let i = 0; i < newPositions.length; i += 2) {
       modelMatrix
@@ -239,9 +289,15 @@ export default class WebGlElement {
         .multiply(modelMatrix)
 
       gl.uniformMatrix4fv(this.u_MvpMatrix, false, mvpMatrix.elements)
-      gl.uniform2fv(
+
+      normalMatrix.setInverseOf(modelMatrix)
+      normalMatrix.transpose()
+      // Pass the transformation matrix for normals to u_NormalMatrix
+      gl.uniformMatrix4fv(this.u_NormalMatrix, false, normalMatrix.elements)
+
+      gl.uniform4fv(
         this.u_Color,
-        new Float32Array([newColors[i], newColors[i + 1]])
+        new Float32Array([newColors[i], newColors[i + 1], 0, 1])
       )
 
       gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0)

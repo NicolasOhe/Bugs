@@ -152,18 +152,19 @@ export default class Ground extends WebGlElement {
     gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Position)
 
-    const colorForEachVertice = []
-    this.colors.forEach((c) => {
-      colorForEachVertice.push(c, c, c, c, c, c)
+    const colorForEachVertice = new Float32Array(this.colors.length * 6)
+    this.colors.forEach((color, i) => {
+      const index = i * 6
+      colorForEachVertice[index] = color
+      colorForEachVertice[index + 1] = color
+      colorForEachVertice[index + 2] = color
+      colorForEachVertice[index + 3] = color
+      colorForEachVertice[index + 4] = color
+      colorForEachVertice[index + 5] = color
     })
-    //console.log(colorForEachVertice.length, this.ground.length)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(colorForEachVertice),
-      gl.STATIC_DRAW
-    )
+    gl.bufferData(gl.ARRAY_BUFFER, colorForEachVertice, gl.STATIC_DRAW)
     gl.vertexAttribPointer(this.a_Color, 1, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Color)
 
