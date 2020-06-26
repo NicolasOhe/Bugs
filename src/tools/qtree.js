@@ -1,7 +1,7 @@
 export function generateQuadTree(bugs, minX, minY, maxX, maxY) {
   const boundary = Qtree.getBoundary(minX, minY, maxX, maxY)
 
-  const qt = new Qtree(boundary, 4)
+  const qt = new Qtree(boundary)
   for (let bug of bugs) {
     qt.insert(bug)
   }
@@ -25,9 +25,8 @@ export class Qtree {
     return new Rectangle(x, y, w / 2, h / 2)
   }
 
-  constructor(boundary, capacity) {
+  constructor(boundary) {
     this.boundary = boundary
-    this.capacity = capacity
     this.bucket = []
     this.regions = {}
     this.divided = false
@@ -39,7 +38,7 @@ export class Qtree {
       return false
     }
     if (!this.divided) {
-      if (this.bucket.length < this.capacity) {
+      if (this.bucket.length < Qtree.capacity) {
         this.bucket.push(bug)
         return true
       }
@@ -74,10 +73,10 @@ export class Qtree {
     const swSpace = new Rectangle(x - hW, y + hH, hW, hH)
     const seSpace = new Rectangle(x + hW, y + hH, hW, hH)
 
-    this.regions.nw = new Qtree(nwSpace, this.capacity)
-    this.regions.ne = new Qtree(neSpace, this.capacity)
-    this.regions.sw = new Qtree(swSpace, this.capacity)
-    this.regions.se = new Qtree(seSpace, this.capacity)
+    this.regions.nw = new Qtree(nwSpace, Qtree.capacity)
+    this.regions.ne = new Qtree(neSpace, Qtree.capacity)
+    this.regions.sw = new Qtree(swSpace, Qtree.capacity)
+    this.regions.se = new Qtree(seSpace, Qtree.capacity)
 
     this.divided = true
   }
@@ -95,7 +94,7 @@ export class Qtree {
     }
 
     if (rect.encompasses(this.boundary)) {
-      return [...this.gather(rect)]
+      return this.gather(rect)
     }
 
     if (this.divided) {
@@ -106,7 +105,7 @@ export class Qtree {
         ...this.regions.se.query(rect),
       ]
     } else {
-      return [...this.bucket]
+      return this.bucket
     }
   }
 
@@ -119,7 +118,7 @@ export class Qtree {
         ...this.regions.se.gather(rect),
       ]
     } else {
-      return [...this.bucket]
+      return this.bucket
     }
   }
 }
@@ -162,3 +161,5 @@ export class Rectangle {
     )
   }
 }
+
+Qtree.capacity = 4
