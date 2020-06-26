@@ -80,7 +80,7 @@ Killer.team = { red: 0, blue: 1 }
 Killer.activity = { gather: 0, bringFood: 1 }
 Killer.energyTransfer = 0.5
 Killer.energyLimit = 10
-Killer.perceptionLimit = 2 * Killer.size
+Killer.perceptionLimit = 2 * 0.1 //Killer.size
 
 export default class Killers extends SpeciesContainer {
   constructor(initialPopulation) {
