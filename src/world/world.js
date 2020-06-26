@@ -1,4 +1,5 @@
 import Stats from '../tools/stats'
+import { Matrix4 } from '../tools/cuon-matrix'
 import { Bug } from './entities/vehicles/bugs'
 
 export default class World {
@@ -7,12 +8,20 @@ export default class World {
     this.canvas = document.querySelector(selector)
     this.canvas.width = surface
     this.canvas.height = surface
-    this.gl = this.canvas.getContext('webgl', { antialias: false })
+    this.gl = this.canvas.getContext('webgl', { antialias: true })
     this.gl.clearColor(0.0, 0.0, 0.0, 1.0)
     this.gl.enable(this.gl.BLEND)
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    this.gl.enable(this.gl.DEPTH_TEST)
     this.elements = []
     this.register = {}
+    this.viewMatrix = new Matrix4().setLookAt(0, 5, 1, 0, 0, 0, 0, 1, 0)
+    this.projMatrix = new Matrix4().setPerspective(
+      30,
+      this.canvas.width / this.canvas.height,
+      2,
+      100
+    )
     this.stats = new Stats(60, '#stats')
   }
 
@@ -22,8 +31,19 @@ export default class World {
     element.setup(this.gl, this)
   }
 
-  draw() {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT)
+  draw(time) {
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
+    this.viewMatrix = new Matrix4().setLookAt(
+      3 * Math.cos(time / 40000),
+      3,
+      3 * Math.sin(time / 40000),
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    )
     this.elements.forEach((element) => {
       element.draw()
     })
@@ -45,7 +65,7 @@ export default class World {
     requestAnimationFrame(this.animate.bind(this))
     this.generateStats(time)
     this.update()
-    this.draw()
+    this.draw(time)
   }
 
   generateStats(time) {

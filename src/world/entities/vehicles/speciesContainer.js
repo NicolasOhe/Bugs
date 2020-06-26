@@ -25,7 +25,7 @@ export default class SpeciesContainer extends WebGlElement {
     }
 
     const entitySize = Math.floor(this.entityType.size * world.surface)
-    super.setup(gl, entitySize)
+    super.setup(world, entitySize)
   }
 
   getPotentialTouching(other) {

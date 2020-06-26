@@ -7,7 +7,7 @@ import Guards, { Guard } from './world/entities/vehicles/guards'
 
 const surface = 800
 const itemsPerLine = 100
-Bug.size = 1 / 100
+Bug.size = 1 / 50
 Bug.maxSpeed = 700
 Killer.size = 1 / 30
 Killer.maxSpeed = 500

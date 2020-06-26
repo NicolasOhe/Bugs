@@ -89,7 +89,7 @@ export default class Bases extends WebGlElement {
     const entitySize = Base.size * world.surface
     const positions = this.getBasesPositions()
     const colors = this.getBugsTeams()
-    super.setup(gl, entitySize, positions, colors)
+    super.setup(world, entitySize, positions, colors)
   }
 
   getBasesPositions() {

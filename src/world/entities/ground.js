@@ -1,5 +1,5 @@
 import WebGlElement from '../../tools/webglelement'
-
+import { Matrix4 } from '../../tools/cuon-matrix'
 export default class Ground extends WebGlElement {
   constructor(itemsPerLine) {
     super()
@@ -10,31 +10,99 @@ export default class Ground extends WebGlElement {
     this.vertexColorBuffer = null
     this.a_position = null
     this.a_Color = null
+    this.u_MvpMatrix = null
     this.gl = null
     this.ground = []
     this.colors = []
     this.world = null
+  }
 
-    for (let iy = 0; iy < itemsPerLine; iy++) {
-      for (let ix = 0; ix < itemsPerLine; ix++) {
-        const x = (ix + 0.5) * this.tileSize * 2 - 1
-        const y = (iy + 0.5) * this.tileSize * 2 - 1
-        this.ground.push(x, y)
-        this.colors.push(Math.random() * 0.5 + 0.1)
+  generateVerticesGround() {
+    const vertices = []
+    const tileSize = this.tileSize
+    const height = -0.03
+
+    for (let iz = 0; iz < this.itemsPerLine; iz++) {
+      for (let ix = 0; ix < this.itemsPerLine; ix++) {
+        //bottom left
+        let x = ix * tileSize * 2 - 1
+        let z = iz * tileSize * 2 - 1
+        vertices.push(x, height, z)
+
+        // top left
+        x = ix * tileSize * 2 - 1
+        z = (iz + 1) * tileSize * 2 - 1
+        vertices.push(x, height, z)
+
+        //top right
+        x = (ix + 1) * tileSize * 2 - 1
+        z = (iz + 1) * tileSize * 2 - 1
+        vertices.push(x, height, z)
+
+        //bottom left
+        x = ix * tileSize * 2 - 1
+        z = iz * tileSize * 2 - 1
+        vertices.push(x, height, z)
+
+        //top right
+        x = (ix + 1) * tileSize * 2 - 1
+        z = (iz + 1) * tileSize * 2 - 1
+        vertices.push(x, height, z)
+
+        //bottom right
+        x = (ix + 1) * tileSize * 2 - 1
+        z = iz * tileSize * 2 - 1
+        vertices.push(x, height, z)
       }
     }
+    return vertices
   }
 
   setup(gl, world) {
     this.gl = gl
     this.world = world
 
+    for (let iy = 0; iy < this.itemsPerLine; iy++) {
+      for (let ix = 0; ix < this.itemsPerLine; ix++) {
+        // const x = (ix + 0.5) * this.tileSize * 2 - 1
+        // const y = (iy + 0.5) * this.tileSize * 2 - 1
+        // this.ground.push(x, y)
+        this.colors.push(Math.random() * 0.5 + 0.1)
+      }
+    }
+    this.ground = this.generateVerticesGround()
+    //this.generateGround()
+    //console.table(this.ground)
+
+    // const vertexShader = `
+    // attribute vec4 a_Position;
+    // attribute vec4 a_Color;
+    // varying vec4 v_Color;
+    // void main() {
+    //     gl_Position = a_Position;
+    //     gl_PointSize = ${Math.round(this.tileSize * world.surface)}.;
+    //     v_Color = a_Color;
+    // }
+    // `
+
+    // const fragmentShader = `
+    // precision mediump float;
+    // varying vec4 v_Color;
+
+    // void main() {
+    //     gl_FragColor = vec4(v_Color.r*0.2, v_Color.r, v_Color.r*0.3, 1.0);
+
+    // }
+    // `
+
     const vertexShader = `
     attribute vec4 a_Position;
     attribute vec4 a_Color;
+    uniform mat4 u_MvpMatrix;
     varying vec4 v_Color;
     void main() {
-        gl_Position = a_Position;
+        gl_Position = u_MvpMatrix * a_Position;
+        //gl_Position = u_MvpMatrix * vec4(a_Position.x,0.0,a_Position.y, 1.0);
         gl_PointSize = ${Math.round(this.tileSize * world.surface)}.;
         v_Color = a_Color;
     }
@@ -42,8 +110,6 @@ export default class Ground extends WebGlElement {
 
     const fragmentShader = `
     precision mediump float;
-    uniform vec4 u_Color;
-    uniform vec2 u_Canvas;
     varying vec4 v_Color;
     
     void main() {
@@ -55,12 +121,6 @@ export default class Ground extends WebGlElement {
     this.program = this.createProgramm(gl, vertexShader, fragmentShader)
     gl.useProgram(this.program)
 
-    const u_Color = gl.getUniformLocation(this.program, 'u_Color')
-    gl.uniform4f(u_Color, 0.0, 1.0, 0.0, 1.0)
-
-    const u_Canvas = gl.getUniformLocation(this.program, 'u_Canvas')
-    gl.uniform2f(u_Canvas, world.canvas.width, world.canvas.height)
-
     // setup vertices buffer
     this.vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
@@ -70,6 +130,8 @@ export default class Ground extends WebGlElement {
       gl.STATIC_DRAW
     )
     this.a_Position = gl.getAttribLocation(this.program, 'a_Position')
+
+    this.u_MvpMatrix = gl.getUniformLocation(this.program, 'u_MvpMatrix')
 
     // setup color buffer
     this.vertexColorBuffer = gl.createBuffer()
@@ -87,19 +149,35 @@ export default class Ground extends WebGlElement {
     gl.useProgram(program)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-    gl.vertexAttribPointer(this.a_Position, 2, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(this.a_Position, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Position)
+
+    const colorForEachVertice = []
+    this.colors.forEach((c) => {
+      colorForEachVertice.push(c, c, c, c, c, c)
+    })
+    //console.log(colorForEachVertice.length, this.ground.length)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array(this.colors),
+      new Float32Array(colorForEachVertice),
       gl.STATIC_DRAW
     )
     gl.vertexAttribPointer(this.a_Color, 1, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(this.a_Color)
 
-    gl.drawArrays(gl.POINTS, 0, this.ground.length / 2)
+    const mvpMatrix = new Matrix4() // Model view projection matrix
+    const modelMatrix = new Matrix4() // Model matrix
+    mvpMatrix
+      .set(this.world.projMatrix)
+      .multiply(this.world.viewMatrix)
+      .multiply(modelMatrix)
+    // Pass the model view projection matrix to u_MvpMatrix
+    //debugger
+    gl.uniformMatrix4fv(this.u_MvpMatrix, false, mvpMatrix.elements)
+
+    gl.drawArrays(gl.TRIANGLES, 0, this.ground.length / 3)
   }
 
   update() {
@@ -111,10 +189,15 @@ export default class Ground extends WebGlElement {
     }
   }
 
-  collect({ x, y }) {
+  getColorIndex({ x, y }) {
     const column = Math.floor(x / this.tileSize)
     const row = Math.floor(y / this.tileSize)
     const index = row * this.itemsPerLine + column
+    return index
+  }
+
+  collect(vehicule) {
+    const index = this.getColorIndex(vehicule)
     const value = this.colors[index]
     if (value > 0.05) {
       const harvest = this.colors[index] * 0.03
@@ -125,10 +208,7 @@ export default class Ground extends WebGlElement {
   }
 
   inspectSurroundingFertility(vehicule) {
-    const { x, y } = vehicule
-    const column = Math.floor(x / this.tileSize)
-    const row = Math.floor(y / this.tileSize)
-    const index = row * this.itemsPerLine + column
+    const index = this.getColorIndex(vehicule)
     let top = 0
     let bottom = 0
     let right = 0
