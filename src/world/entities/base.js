@@ -109,7 +109,7 @@ export default class Bases extends WebGlElement {
   }
 
   draw() {
-    super.draw(this.elements.length)
+    //super.draw(this.elements.length)
   }
 
   update() {
