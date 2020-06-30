@@ -4,7 +4,7 @@ This is an exploration of a simulated ecosystem with two teams contesting for su
 
 I am fascinated by the intelligence and strategies that can emerge from very simple sets of rules that autonomous agents follow.
 
-Visit the online version here: https://nicolasohe.github.io/bugs/
+Visit the online version here: https://nicolasohe.github.io/Bugs/
 
 ## Start locally
 
