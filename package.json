@@ -2,13 +2,13 @@
   "name": "bugs",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://nicolasohe.github.io/popular-github-repos",
+  "homepage": "https://nicolasohe.github.io/Bugs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
     "build": "parcel build index.html",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "author": "Nicolas",
   "license": "ISC",
