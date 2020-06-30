@@ -4,9 +4,8 @@
   "description": "",
   "homepage": "https://nicolasohe.github.io/Bugs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
-    "build": "parcel build index.html",
+    "build": "parcel build index.html --public-url /Bugs/",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
@@ -14,6 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "gh-pages": "^3.1.0",
-    "parcel": "^1.12.4"
+    "parcel": "^2.0.0-beta.1"
   }
 }
