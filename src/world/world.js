@@ -25,12 +25,11 @@ export default class World {
     this.stats = new Stats(60, '#stats')
   }
 
-  add(element) {
+  add(element, name) {
     this.elements.push(element)
-    this.register[element.constructor.name] = element
+    this.register[name] = element
     element.setup(this.gl, this)
   }
-
   draw(time) {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
     this.viewMatrix = new Matrix4().setLookAt(
