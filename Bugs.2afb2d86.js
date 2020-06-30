@@ -522,6 +522,7 @@ class World {
   }
 
   generateStats(time) {
+    return;
     this.stats.tick(time);
     const total = this.register.Bugs.individuals.length;
     this.stats.add('bugs', total);
