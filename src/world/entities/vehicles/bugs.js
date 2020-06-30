@@ -18,13 +18,15 @@ export class Bug extends Vehicle {
       this
     )
 
+    const manhattanMinTouchDistance = minTouchDistance ** 2
     nearNeighboors.forEach((neighboor) => {
-      if (this.getDistance(neighboor) < minTouchDistance) {
+      if (this.getManhattanDistance(neighboor) < manhattanMinTouchDistance) {
         if (neighboor.team !== this.team) {
           this.energy = this.energy * 0.98 - 0.01
         }
       }
     })
+
     return this
   }
 
